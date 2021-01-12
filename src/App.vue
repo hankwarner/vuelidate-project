@@ -2,7 +2,7 @@
     <b-container>
         <b-card class="mt-3" header="Very Simple Form">
             <b-form @submit="onSubmit">
-                <b-form-group label="Your Name:" :invalid-feedback="" :state="">
+                <b-form-group label="Your Name:" invalid-feedback="Invalid" :state="">
                     <b-form-input
                         v-model="form.name"
                         placeholder="Enter name"
@@ -11,7 +11,7 @@
 
                 <b-form-group
                     label="Email address:"
-                    :invalid-feedback=""
+                    invalid-feedback="Invalid"
                     :state=""
                 >
                     <b-form-input
@@ -20,21 +20,21 @@
                     ></b-form-input>
                 </b-form-group>
 
-                <b-form-group label="Phone:" :invalid-feedback="" :state="">
+                <b-form-group label="Phone:" invalid-feedback="Invalid" :state="">
                     <b-form-input
                         v-model="form.phone"
                         placeholder="Enter phone"
                     ></b-form-input>
                 </b-form-group>
 
-                <b-form-group label="Food:" :invalid-feedback="" :state="">
+                <b-form-group label="Food:" invalid-feedback="Invalid" :state="">
                     <b-form-select
                         v-model="form.food"
                         :options="foods"
                     ></b-form-select>
                 </b-form-group>
 
-                <b-form-group :invalid-feedback="" :state="">
+                <b-form-group invalid-feedback="Invalid" :state="">
                     <b-form-checkbox-group v-model="form.checked">
                         <b-form-checkbox value="me"
                             >Check me out</b-form-checkbox
@@ -73,6 +73,10 @@ export default {
         };
     },
     validations: {},
-    methods: {},
+    methods: {
+        onSubmit: function (event) {
+            event.preventDefault();
+        },
+    },
 };
 </script>
