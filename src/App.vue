@@ -175,6 +175,6 @@ export default {
 
 <style scoped>
     .alert {
-        margin-top: 2.5%;
+        margin-top: 2.5vh;
     }
 </style>
