@@ -1,73 +1,65 @@
 <template>
     <b-container>
         <b-card class="mt-3" header="Very Simple Form">
-            <b-form @submit="onSubmit">
-                <b-form-group label="Your Name:" invalid-feedback="Invalid" :state="nameState">
-                    <b-form-input
-                        v-model="form.name"
-                        placeholder="Enter name"
-                    ></b-form-input>
-                </b-form-group>
+            <b-overlay :show="loading" rounded="sm">
+                <b-form @submit="onSubmit">
+                    <b-form-group label="Your Name:" invalid-feedback="Invalid" :state="nameState">
+                        <b-form-input
+                            v-model="$v.form.name.$model"
+                            placeholder="Enter name"
+                        ></b-form-input>
+                    </b-form-group>
 
-                <b-form-group
-                    label="Email address:"
-                    invalid-feedback="Invalid"
-                    :state="emailState"
+                    <b-form-group
+                        label="Email address:"
+                        invalid-feedback="Invalid"
+                        :state="emailState"
+                    >
+                        <b-form-input
+                            v-model="$v.form.email.$model"
+                            placeholder="Enter email"
+                        ></b-form-input>
+                    </b-form-group>
+
+                    <b-form-group label="Phone:" invalid-feedback="Invalid" :state="phoneState">
+                        <b-form-input
+                            v-model="$v.form.phone.$model"
+                            placeholder="Enter phone"
+                        ></b-form-input>
+                    </b-form-group>
+
+                    <b-form-group label="Food:" invalid-feedback="Invalid" :state="foodState">
+                        <b-form-select
+                            v-model="$v.form.food.$model"
+                            :options="foods"
+                        ></b-form-select>
+                    </b-form-group>
+
+                    <b-form-group invalid-feedback="Invalid" :state="checkedState">
+                        <b-form-checkbox-group v-model="$v.form.checked.$model">
+                            <b-form-checkbox value="me"
+                                >Check me out</b-form-checkbox
+                            >
+                            <b-form-checkbox value="that"
+                                >Check that out</b-form-checkbox
+                            >
+                        </b-form-checkbox-group>
+                    </b-form-group>
+
+                    <b-button type="submit" variant="primary">Submit</b-button>
+                </b-form>
+
+                <!-- Upon submit, show a dismissable alert with a success/failure message that disappears after 10 secs -->
+                <b-alert 
+                    :variant="variant"
+                    :show="dismissCountDown" 
+                    dismissible
+                    fade
+                    @dismiss-count-down="countDownChanged"
                 >
-                    <b-form-input
-                        v-model="form.email"
-                        placeholder="Enter email"
-                    ></b-form-input>
-                </b-form-group>
-
-                <b-form-group label="Phone:" invalid-feedback="Invalid" :state="phoneState">
-                    <b-form-input
-                        v-model="form.phone"
-                        placeholder="Enter phone"
-                    ></b-form-input>
-                </b-form-group>
-
-                <b-form-group label="Food:" invalid-feedback="Invalid" :state="foodState">
-                    <b-form-select
-                        v-model="form.food"
-                        :options="foods"
-                    ></b-form-select>
-                </b-form-group>
-
-                <b-form-group invalid-feedback="Invalid" :state="checkedState">
-                    <b-form-checkbox-group v-model="form.checked">
-                        <b-form-checkbox value="me"
-                            >Check me out</b-form-checkbox
-                        >
-                        <b-form-checkbox value="that"
-                            >Check that out</b-form-checkbox
-                        >
-                    </b-form-checkbox-group>
-                </b-form-group>
-
-                <b-button type="submit" variant="primary">Submit</b-button>
-            </b-form>
-
-            <!-- Upon submit, shows a dismissable alert with a success/failure message and disappears when dismissSecs == 0 -->
-            <b-alert 
-                variant="success" 
-                :show="success && dismissCountDown" 
-                dismissible
-                fade
-                @dismiss-count-down="countDownChanged"
-            >
-                Success!
-            </b-alert>
-            <b-alert 
-                variant="danger" 
-                :show="success == false && dismissCountDown" 
-                dismissible
-                fade
-                @dismiss-count-down="countDownChanged"
-            >
-                Please complete all required fields.
-            </b-alert>
-
+                    {{ message }}
+                </b-alert>
+            </b-overlay>
         </b-card>
     </b-container>
 </template>
@@ -103,9 +95,11 @@ export default {
                 "Tomatoes",
                 "Corn",
             ],
-            success: null,
+            loading: false,
+            variant: null,
+            message: "",
             dismissSecs: 10,
-            dismissCountDown: 0
+            dismissCountDown: 0,
         };
     },
     validations: {
@@ -132,17 +126,32 @@ export default {
         validationGroup: ["form.name", "form.email", "form.phone", "form.food", "form.checked"]
     },
     methods: {
-        onSubmit: function (event) {
-            event.preventDefault();
+        onSubmit: async function (event) {
+            try {
+                event.preventDefault();
+                this.loading = true;
 
-            // If form is valid, flag it as successful so an alert will display the correct success/failure message
-            if(!this.$v.$invalid){
-                this.success = true;
-            } else {
-                this.success = false;
+                // If form is valid, flag it as successful so an alert will display the correct success/failure message
+                if(!this.$v.$invalid){
+                    // Mimic an API call by calling setTimeout synchronously so the loader will display for 1 second
+                    await this.timeout(1000);
+
+                    this.variant = "success";
+                    this.message = "Form successfully submitted!";
+
+                } else {
+                    this.variant = "danger";
+                    this.message = "Please complete all required fields.";
+                }
+
+                this.showAlert();
+
+            } catch (e) {
+                console.log(e);
+
+            } finally {
+                this.loading = false;
             }
-
-            this.showAlert();
         },
         showAlert() {
             // Starts the countdown
@@ -152,21 +161,35 @@ export default {
             // Decrements the countdown
             this.dismissCountDown = dismissCountDown;
         },
+        timeout(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
     },
     computed: {
-        nameState(){
+        nameState() {
+            // If input field hasn't been touched by the user, don't show validation error
+            if(!this.$v.form.name.$error)  return true;
+
             return !this.$v.form.name.$invalid;
         },
-        emailState(){
+        emailState() {
+            if(!this.$v.form.email.$error) return true;
+
             return !this.$v.form.email.$invalid;
         },
-        phoneState(){
+        phoneState(){ 
+            if(!this.$v.form.phone.$error) return true;
+
             return !this.$v.form.phone.$invalid;
         },
-        foodState(){
+        foodState() {
+            if(!this.$v.form.food.$error) return true;
+
             return !this.$v.form.food.$invalid;
         },
-        checkedState(){
+        checkedState() {
+            if(!this.$v.form.checked.$error) return true;
+
             return !this.$v.form.checked.$invalid;
         }
     }
