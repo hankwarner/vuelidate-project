@@ -11,11 +11,7 @@
                         ></b-form-input>
                     </b-form-group>
 
-                    <b-form-group
-                        label="Email address:"
-                        invalid-feedback="Invalid"
-                        :state="emailState"
-                    >
+                    <b-form-group label="Email address:" invalid-feedback="Invalid" :state="emailState">
                         <b-form-input
                             v-model="$v.form.email.$model"
                             :class="{ 'invalid-input': $v.form.email.$error }"
