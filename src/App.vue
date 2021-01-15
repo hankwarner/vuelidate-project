@@ -6,6 +6,7 @@
                     <b-form-group label="Your Name:" invalid-feedback="Invalid" :state="nameState">
                         <b-form-input
                             v-model="$v.form.name.$model"
+                            :class="{ 'invalid-input': $v.form.name.$error }"
                             placeholder="Enter name"
                         ></b-form-input>
                     </b-form-group>
@@ -17,6 +18,7 @@
                     >
                         <b-form-input
                             v-model="$v.form.email.$model"
+                            :class="{ 'invalid-input': $v.form.email.$error }"
                             placeholder="Enter email"
                         ></b-form-input>
                     </b-form-group>
@@ -24,6 +26,7 @@
                     <b-form-group label="Phone:" invalid-feedback="Invalid" :state="phoneState">
                         <b-form-input
                             v-model="$v.form.phone.$model"
+                            :class="{ 'invalid-input': $v.form.phone.$error }"
                             placeholder="Enter phone"
                         ></b-form-input>
                     </b-form-group>
@@ -31,6 +34,7 @@
                     <b-form-group label="Food:" invalid-feedback="Invalid" :state="foodState">
                         <b-form-select
                             v-model="$v.form.food.$model"
+                            :class="{ 'invalid-input': $v.form.food.$error }"
                             :options="foods"
                         ></b-form-select>
                     </b-form-group>
@@ -140,6 +144,9 @@ export default {
                     this.message = "Form successfully submitted!";
 
                 } else {
+                    // Force validation so the user can see which fields are invalid
+                    this.$v.$touch();
+
                     this.variant = "danger";
                     this.message = "Please complete all required fields.";
                 }
@@ -168,29 +175,19 @@ export default {
     computed: {
         nameState() {
             // If input field hasn't been touched by the user, don't show validation error
-            if(!this.$v.form.name.$error)  return true;
-
-            return !this.$v.form.name.$invalid;
+            return !this.$v.form.name.$error ? true : !this.$v.form.name.$invalid;
         },
         emailState() {
-            if(!this.$v.form.email.$error) return true;
-
-            return !this.$v.form.email.$invalid;
+            return !this.$v.form.email.$error ? true : !this.$v.form.email.$invalid;
         },
         phoneState(){ 
-            if(!this.$v.form.phone.$error) return true;
-
-            return !this.$v.form.phone.$invalid;
+            return !this.$v.form.phone.$error ? true : !this.$v.form.phone.$invalid;
         },
         foodState() {
-            if(!this.$v.form.food.$error) return true;
-
-            return !this.$v.form.food.$invalid;
+            return !this.$v.form.food.$error ? true : !this.$v.form.food.$invalid;
         },
         checkedState() {
-            if(!this.$v.form.checked.$error) return true;
-
-            return !this.$v.form.checked.$invalid;
+            return !this.$v.form.checked.$error ? true : !this.$v.form.checked.$invalid;
         }
     }
 };
@@ -199,5 +196,9 @@ export default {
 <style scoped>
     .alert {
         margin-top: 2.5vh;
+    }
+
+    .invalid-input {
+        border-color: red;
     }
 </style>
